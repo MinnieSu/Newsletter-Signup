@@ -1,11 +1,12 @@
+require("dotenv").config();
 const express = require("express");
 const app = express();
 const https = require("https");
 const mailchimp = require("@mailchimp/mailchimp_marketing");
 
 mailchimp.setConfig({
-  apiKey: "70b9927f7d209dd9d8ba12da3489a9a8-us21",
-  server: "us21",
+  apiKey: process.env.API_KEY,
+  server: process.env.SERVER,
 });
 
 // enable our server to serve up static file.
@@ -33,14 +34,17 @@ app.post("/", function (req, res) {
   };
   async function run() {
     try {
-      const response = await mailchimp.lists.addListMember("df9eacda0a", {
-        email_address: subscribingUser.email,
-        status: "subscribed",
-        merge_fields: {
-          FNAME: subscribingUser.firstName,
-          LNAME: subscribingUser.lastName,
-        },
-      });
+      const response = await mailchimp.lists.addListMember(
+        process.env.LIST_ID,
+        {
+          email_address: subscribingUser.email,
+          status: "subscribed",
+          merge_fields: {
+            FNAME: subscribingUser.firstName,
+            LNAME: subscribingUser.lastName,
+          },
+        }
+      );
 
       console.log(
         `Successfully added contact as an audience member. The contact's id is ${response.id}.`
@@ -55,16 +59,10 @@ app.post("/", function (req, res) {
   run();
 });
 
-app.post("/failure", function(req,res){
-    res.redirect("/");
+app.post("/failure", function (req, res) {
+  res.redirect("/");
 });
 
 app.listen(process.env.PORT || 3000, function () {
   console.log("server is running on port 3000.");
 });
-
-// API Key
-// 70b9927f7d209dd9d8ba12da3489a9a8-us21
-
-// List id: helps mailchimp to identify the list that you want to put your subscribers into
-// df9eacda0a
